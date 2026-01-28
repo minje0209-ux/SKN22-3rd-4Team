@@ -28,19 +28,26 @@ st.set_page_config(
 st.markdown(
     """
 <style>
+    /* 메인 컨테이너의 상단 마진 축소 */
+    [data-testid="stVerticalBlock"] > [style*="flex-direction"] {
+        margin-top: -2rem !important;
+    }
+    
     .main-header {
         font-size: 3rem;
         font-weight: 700;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 1rem;
+        margin-bottom: 0.5rem;
+        margin-top: -1rem;
     }
     
     .sub-header {
         font-size: 1.2rem;
         color: #6c757d;
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
+        margin-top: -0.5rem;
     }
     
     .metric-card {
