@@ -10,16 +10,22 @@ c:\Workspaces\SKN22-3rd-4Team
 ├── app.py                # Streamlit 메인 엔트리포인트 (애플리케이션 실행)
 ├── requirements.txt      # 파이썬 의존성 패키지 목록
 ├── config/               # 전역 설정
+│   ├── logging_config.py # 로깅 설정
 │   └── settings.py       # 모델 설정, 경로 상수 등
-├── data/                 # 로컬 데이터 저장소 (DB 아님)
+├── data/                 # 로컬 데이터 저장소
 │   ├── 10k_documents/    # 수집된 SEC 10-K 보고서 원본 (PDF/TXT)
-│   └── processed/        # 전처리 및 가공된 중간 데이터
+│   ├── logs/             # 애플리케이션 로그
+│   ├── processed/        # 전처리 및 가공된 중간 데이터
+│   ├── raw/              # 수집된 원본 데이터
+│   └── vector_store/     # 로컬 벡터 저장소 데이터
 ├── docs/                 # 문서화
-│   └── TUTORIAL.md       # 사용자 매뉴얼 및 가이드
+│   ├── TUTORIAL.md       # 사용자 매뉴얼 및 가이드
+│   └── images/           # 문서용 이미지 자산
 ├── fonts/                # PDF 리포트 생성용 폰트
 │   ├── NanumGothic.ttf
 │   └── NanumGothicBold.ttf
-├── models/               # 사용자 정의 ML 모델 (필요 시)
+├── models/               # ML 모델 및 관련 설정
+│   └── settings.py
 ├── scripts/              # 데이터 파이프라인 및 배치 스크립트
 │   ├── collect_10k_relationships.py   # 10-K 기반 기업 관계 추출
 │   ├── collect_top100_financials.py   # 주요 100대 기업 재무 수집
@@ -34,9 +40,7 @@ c:\Workspaces\SKN22-3rd-4Team
     │   ├── chat_connector.py          # LLM 채팅 핸들러
     │   └── input_validator.py         # 사용자 입력 검증기
     ├── data/             # 외부 데이터 API 클라이언트
-    │   ├── filing_processor.py        # 공시 데이터 가공
-    │   ├── sec_collector.py           # EDGAR SEC 데이터 수집
-    │   ├── seeking_alpha_client.py    # Seeking Alpha 뉴스/분석 수집
+    │   ├── finnhub_client.py          # Finnhub API 클라이언트
     │   ├── stock_api_client.py        # 통합 주식 데이터 (Finnhub, yfinance)
     │   └── supabase_client.py         # Supabase DB 입출력 핸들러
     ├── prompts/          # LangChain 프롬프트 템플릿
@@ -53,28 +57,28 @@ c:\Workspaces\SKN22-3rd-4Team
     │   └── vector_store.py            # 벡터 DB 인터페이스
     ├── sql/              # Natural Language to SQL
     │   └── text_to_sql.py             # 자연어 질의 -> SQL 변환기
-    ├── tools/            # LangGraph/Agent 전용 도구
-    │   ├── calculator_tool.py         # 계산 도구
-    │   ├── finnhub_tool.py           # Finnhub 연동 도구
-    │   ├── search_tool.py             # 웹 검색 도구 (Tavily 등)
-    │   └── vector_tool.py             # 벡터 검색 도구
+    ├── tools/            # 통합 서비스 및 유틸리티 도구
+    │   ├── exchange_rate_client.py     # 환율 정보 클라이언트
+    │   ├── favorites_manager.py       # 관심 기업(즐겨찾기) 관리자
+    │   ├── scheduler_manager.py       # 스케줄러 관리자
+    │   ├── stock_api_client.py        # 주식 API 클라이언트 (통합)
+    │   └── stock_api_server.py        # 주식 데이터 서버 로직
     ├── ui/               # Streamlit 사용자 인터페이스
-    │   ├── helpers/      # UI 컴포넌트 분리
-    │   │   ├── chart_helpers.py       # 차트 그리기/설정 헬퍼
+    │   ├── helpers/      # UI 컴포넌트 헬퍼
+    │   │   ├── chart_helpers.py       # 차트 구성 헬퍼
     │   │   ├── chat_helpers.py        # 채팅 UI 구성 헬퍼
-    │   │   └── insights_helper.py     # 인사이트/티커 리졸버 헬퍼
+    │   │   ├── home_dashboard.py      # 홈 화면 대시보드 컴포넌트
+    │   │   ├── insights_helper.py     # 인사이트 분석 헬퍼
+    │   │   └── sidebar_manager.py     # 사이드바 관리 헬퍼
     │   └── pages/        # 개별 페이지
-    │       ├── calendar_page.py       # 경제 캘린더 페이지
-    │       ├── home.py                # 메인 대시보드
-    │       ├── insights.py            # 인사이트 채팅 페이지
-    │       └── report_page.py         # 레포트 생성 페이지
-    └── utils/            # 공통 유틸리티
-        ├── chart_utils.py             # Matplotlib 차트 생성 (PDF용)
-        ├── common.py                  # 공통 설정 및 싱글톤 관리
-        ├── financial_calcs.py         # 재무 지표 계산 로직
-        ├── helpers.py                 # 기타 잡다한 헬퍼
+    │       ├── calendar_page.py       # 실적 캘린더 페이지
+    │       ├── home.py                # 메인 대시보드 페이지
+    │       ├── insights.py            # 채팅 기반 인사이트 페이지
+    │       ├── login_page.py          # 로그인 및 회원가입 페이지
+    │       └── report_page.py         # 리포트 생성 페이지
+    └── utils/            # 하위 유틸리티
+        ├── chart_utils.py             # Matplotlib 기반 차트 (PDF용)
+        ├── common.py                  # 공통 설정 및 싱글톤
         ├── pdf_utils.py               # PDF 생성 및 레이아웃
-        ├── plotly_charts.py           # Plotly 차트 생성 (웹용)
-        ├── supabase_helper.py         # Supabase 간편 유틸
-        └── ticker_search_agent.py     # ✅ 지능형 티커 검색/변환 에이전트
+        └── plotly_charts.py           # Plotly 기반 차트 (웹용)
 ```
