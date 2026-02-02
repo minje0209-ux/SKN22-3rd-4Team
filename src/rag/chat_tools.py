@@ -176,7 +176,7 @@ def get_chat_tools():
                     "properties": {
                         "ticker": {
                             "type": "string",
-                            "description": "Company ticker symbol to add (e.g. AAPL, MSFT).",
+                            "description": "Company ticker symbol to add (e.g. AAPL, MSFT). If user says '관심기업 등록해줘' or '추가해줘', extract the company name/ticker.",
                         }
                     },
                     "required": ["ticker"],

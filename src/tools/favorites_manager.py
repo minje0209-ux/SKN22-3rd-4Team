@@ -18,7 +18,19 @@ def add_to_favorites_tool(ticker: str) -> str:
             return "이 기능은 Streamlit 웹 인터페이스에서만 사용할 수 있습니다."
 
         import streamlit as st
-        from src.data.supabase_client import SupabaseClient
+        import logging
+
+        logger = logging.getLogger(__name__)
+
+        # Import robustness
+        try:
+            from data.supabase_client import SupabaseClient
+        except ImportError:
+            try:
+                from src.data.supabase_client import SupabaseClient
+            except ImportError as e:
+                logger.error(f"Failed to import SupabaseClient: {e}")
+                return f"시스템 오류: DB 클라이언트를 로드할 수 없습니다. ({str(e)})"
 
         # 로그인 및 세션 확인
         if not hasattr(st, "session_state"):

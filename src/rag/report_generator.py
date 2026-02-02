@@ -17,12 +17,12 @@ PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
 class ReportGenerator(RAGBase):
     """
     투자 분석 레포트 생성기
-    gpt-4.1-mini 사용
+    gpt-4o-mini 사용
     """
 
     def __init__(self):
         """Initialize report generator inheriting from RAGBase"""
-        super().__init__(model_name="gpt-4.1-mini")
+        super().__init__(model_name="gpt-4o-mini")
 
         # Load system prompt
         self.system_prompt = self._load_prompt("report_generator.txt")
@@ -376,9 +376,9 @@ class ReportGenerator(RAGBase):
 
             except Exception as e:
                 logger.warning(
-                    f"Primary model {self.model} failed: {e}. Falling back to gpt-4.1-mini"
+                    f"Primary model {self.model} failed: {e}. Falling back to gpt-4o-mini"
                 )
-                used_model = "gpt-4.1-mini"
+                used_model = "gpt-4o-mini"
                 try:
                     # 2. Try Fallback Model
                     response = self.openai_client.chat.completions.create(
@@ -471,12 +471,12 @@ class ReportGenerator(RAGBase):
                 try:
                     # 2. Try Fallback Model
                     response = self.openai_client.chat.completions.create(
-                        model="gpt-4.1-mini", messages=messages, max_tokens=4000
+                        model="gpt-4o-mini", messages=messages, max_tokens=4000
                     )
                     content = response.choices[0].message.content
                     if not content:
                         return "❌ 비교 보고서 생성 실패: 모델로부터 내용을 받아오지 못했습니다."
-                    return f"⚠️ [Fallback Model: gpt-4.1-mini]\n\n{content}"
+                    return f"⚠️ [Fallback Model: gpt-4o-mini]\n\n{content}"
                 except Exception as e2:
                     return f"❌ 비교 보고서 생성 실패: {str(e2)}"
 

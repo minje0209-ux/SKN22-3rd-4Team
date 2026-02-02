@@ -15,7 +15,10 @@ c:\Workspaces\SKN22-3rd-4Team
 │   ├── 10k_documents/    # 10-K 보고서 PDF/TXT
 │   └── processed/        # 전처리된 CSV/JSON 데이터
 ├── docs/                 # 문서화 자료
-│   └── TUTORIAL.md       # 상세 사용 가이드
+│   ├── TUTORIAL.md       # 상세 사용 가이드
+│   ├── TESTING_GUIDE.md  # 모델 및 코드 테스트 가이드
+│   └── DATASET_GENERATION_GUIDE.md # 데이터셋 생성 가이드
+
 ├── fonts/                # PDF 생성용 한글 폰트
 │   ├── NanumGothic.ttf
 │   └── NanumGothicBold.ttf
@@ -47,12 +50,18 @@ c:\Workspaces\SKN22-3rd-4Team
     │   ├── helpers/      # UI 헬퍼 모듈
     │   │   ├── chart_helpers.py   # 차트 렌더링 헬퍼
     │   │   ├── chat_helpers.py    # 채팅 UI 헬퍼 (Plotly)
-    │   │   └── insights_helper.py # 인사이트 페이지 헬퍼
+    │   │   ├── chat_helpers.py    # 채팅 UI 헬퍼 (Plotly)
+    │   │   ├── home_dashboard.py  # 홈 대시보드 컴포넌트
+    │   │   ├── insights_helper.py # 인사이트 페이지 헬퍼
+    │   │   └── sidebar_manager.py # 사이드바 및 관심기업 헬퍼
     │   └── pages/
     │       ├── calendar_page.py
     │       ├── home.py
     │       ├── insights.py
+    │       ├── login_page.py      # 로그인 및 회원가입 페이지
     │       └── report_page.py
+    │   └── tests/                # 테스트 코드
+    │       └── generate_dataset.py # 데이터셋 생성 스크립트
     └── utils/            # 유틸리티 함수
         ├── common.py         # 공통 유틸리티 (import, env, 싱글톤)
         ├── chart_utils.py    # Matplotlib 차트 (PDF용)

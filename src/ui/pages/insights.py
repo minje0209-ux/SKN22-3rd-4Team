@@ -194,8 +194,10 @@ def _render_suggested_questions():
                 key=f"suggest_{msg_count}_{i}",
                 use_container_width=True,
             ):
-                # 입력창에 텍스트 채우기 (자동 전송 X)
+                # 입력창 채우기 및 자동 전송 트리거
                 st.session_state["chat_input_field"] = question
+                # pending_question을 설정하여 _render_chat_input에서 반환하고 바로 처리되도록 함
+                st.session_state["pending_question"] = question
                 st.rerun()
 
 
@@ -207,7 +209,7 @@ def _render_chat_input():
         with input_col:
             user_input = st.text_input(
                 "질문 입력",
-                placeholder="'애플 등록해줘' 또는 '엔비디아와 비교해줘'를 입력해보세요.",
+                placeholder="관심 있는 기업이나 시장에 대해 물어보세요 (예: 애플 실적 분석해줘, 엔비디아와 테슬라 비교)",
                 label_visibility="collapsed",
                 key="chat_input_field",
             )

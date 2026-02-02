@@ -27,7 +27,7 @@ class AnalystChatbot(RAGBase):
 
     def __init__(self):
         """Initialize chatbot inheriting from RAGBase"""
-        super().__init__(model_name="gpt-4.1-mini")
+        super().__init__(model_name="gpt-4o-mini")
 
         # Exchange rate client (Special for Chatbot)
         self.exchange_client = None
@@ -181,7 +181,7 @@ class AnalystChatbot(RAGBase):
         """Extract company tickers from user query using LLM"""
         try:
             response = self.openai_client.chat.completions.create(
-                model="gpt-4.1-mini",
+                model="gpt-4o-mini",
                 messages=[
                     {
                         "role": "system",
@@ -267,7 +267,7 @@ class AnalystChatbot(RAGBase):
         # 3. Fallback to LLM
         try:
             resp = self.openai_client.chat.completions.create(
-                model="gpt-4.1-mini",
+                model="gpt-4o-mini",
                 messages=[
                     {
                         "role": "system",
@@ -319,7 +319,7 @@ class AnalystChatbot(RAGBase):
             # Generate Korean Name via LLM
             try:
                 trans_resp = self.openai_client.chat.completions.create(
-                    model="gpt-4.1-mini",
+                    model="gpt-4o-mini",
                     messages=[
                         {
                             "role": "system",
@@ -493,12 +493,18 @@ class AnalystChatbot(RAGBase):
 
             elif function_name == "add_to_favorites":
                 try:
-                    from src.tools.favorites_manager import add_to_favorites_tool
+                    try:
+                        from tools.favorites_manager import add_to_favorites_tool
+                    except ImportError:
+                        from src.tools.favorites_manager import add_to_favorites_tool
 
                     ticker = function_args.get("ticker", "")
                     return add_to_favorites_tool(ticker)
-                except ImportError:
-                    return "즐겨찾기 관리 모듈을 찾을 수 없습니다."
+                except ImportError as e:
+                    logger.error(f"Failed to import favorites tool: {e}")
+                    return "시스템 오류: 즐겨찾기 모듈을 불러올 수 없습니다."
+                except Exception as e:
+                    return f"오류 발생: {str(e)}"
 
             return json.dumps({"error": f"Unknown function: {function_name}"})
         except Exception as e:

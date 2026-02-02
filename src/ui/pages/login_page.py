@@ -1,10 +1,21 @@
 import streamlit as st
 import time
+from datetime import datetime, timedelta
 from data.supabase_client import SupabaseClient
 
 
-def render():
+def render(cookie_manager=None):
     """로그인 및 회원가입 페이지"""
+    import json
+
+    # 쿠키 매니저가 전달되지 않았을 경우 (비상용)
+    if cookie_manager is None:
+        try:
+            import extra_streamlit_components as stx
+
+            cookie_manager = stx.CookieManager(key="login_cookie_manager")
+        except Exception:
+            pass
 
     # CSS 로드
     st.markdown(
@@ -56,13 +67,26 @@ def render():
                             if result["success"]:
                                 st.session_state.user = result["user"]
                                 st.session_state.is_logged_in = True
+
+                                # 쿠키 설정 (JSON으로 통합하여 한 번만 호출)
+                                if cookie_manager:
+                                    session_data = {
+                                        "email": email,
+                                        "id": result["user"]["id"],
+                                    }
+                                    cookie_manager.set(
+                                        "session_data",
+                                        json.dumps(session_data),
+                                        expires_at=datetime.now() + timedelta(days=7),
+                                    )
+
                                 # 관심 기업 로드
                                 favorites = SupabaseClient.get_favorites(
                                     result["user"]["id"]
                                 )
                                 st.session_state.watchlist = favorites
                                 st.success(f"환영합니다! {email}님")
-                                time.sleep(1)
+                                time.sleep(0.5)
                                 st.rerun()
                             else:
                                 st.error(result.get("message", "로그인 실패"))

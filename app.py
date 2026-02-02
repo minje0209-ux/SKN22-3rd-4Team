@@ -3,6 +3,7 @@ Main Streamlit application for Financial Analysis Bot
 """
 
 import streamlit as st
+import time
 import sys
 import logging
 from pathlib import Path
@@ -59,8 +60,58 @@ else:
     )
 
 # ============================================================
-# 로그인 체크
+# 로그인 체크 & 세션 복구 (쿠키 사용)
 # ============================================================
+import extra_streamlit_components as stx
+
+
+def get_cookie_manager():
+    # 키를 명시하여 중복 생성 방지
+    return stx.CookieManager(key="app_cookie_manager")
+
+
+cookie_manager = get_cookie_manager()
+
+# 쿠키에서 세션 복구 시도
+if "is_logged_in" not in st.session_state or not st.session_state.is_logged_in:
+    # 쿠키 확인 (지연 없이 즉시 확인 시도)
+    cookies = cookie_manager.get_all()
+    session_data_str = cookies.get("session_data")
+
+    user_email = None
+    user_id = None
+
+    if session_data_str:
+        import json
+
+        try:
+            session_data = json.loads(session_data_str)
+            user_email = session_data.get("email")
+            user_id = session_data.get("id")
+        except Exception:
+            pass
+
+    if user_email and user_id:
+        # 간단한 복구 로직: 쿠키에 이메일과 ID가 모두 있어야 함
+        from data.supabase_client import SupabaseClient
+
+        st.session_state.is_logged_in = True
+        st.session_state.user = {
+            "email": user_email,
+            "id": user_id,
+        }
+
+        # 관심 기업 로드
+        try:
+            favorites = SupabaseClient.get_favorites(st.session_state.user["id"])
+            st.session_state.watchlist = favorites
+            st.toast(f"🔄 세션이 복구되었습니다 ({user_email})")
+            # 세션 복구 후 즉시 리런
+            st.rerun()
+        except Exception:
+            st.session_state.watchlist = []
+            st.rerun()
+
 if "is_logged_in" not in st.session_state:
     st.session_state.is_logged_in = False
     st.session_state.user = None
@@ -68,7 +119,8 @@ if "is_logged_in" not in st.session_state:
 if not st.session_state.is_logged_in:
     import ui.pages.login_page as login_page
 
-    login_page.render()
+    # 쿠키 매니저 전달하여 중복 생성 방지
+    login_page.render(cookie_manager)
     st.stop()  # 로그인 전에는 메인 앱 실행 중단
 
 # ============================================================
@@ -94,6 +146,16 @@ if st.sidebar.button("로그아웃"):
     st.session_state.is_logged_in = False
     st.session_state.user = None
     st.session_state.watchlist = []
+
+    # 쿠키 삭제
+    try:
+        cookie_manager.delete("session_data")
+        # Legacy cleanup
+        cookie_manager.delete("user_email")
+        cookie_manager.delete("user_id")
+    except Exception:
+        pass
+
     st.rerun()
 
 # ============================================================

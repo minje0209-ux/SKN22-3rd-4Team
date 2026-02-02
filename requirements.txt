@@ -1,6 +1,7 @@
 # Core Framework
 streamlit>=1.31.0
 python-dotenv>=1.0.0
+extra-streamlit-components>=0.1.70
 
 # LLM & AI
 openai>=1.12.0
@@ -35,3 +36,4 @@ APScheduler>=3.10.0
 lxml>=5.1.0
 tavily-python>=0.3.0
 streamlit-searchbox>=0.1.7
+pypdf>=4.0.0
