@@ -28,10 +28,11 @@
 
 ```mermaid
 graph TD
-    User([👤 사용자]) -->|Access| UI[💻 Streamlit Web App]
+    User([👤 사용자]) -->|1. 접속| Login[🔐 로그인/회원가입]
+    Login -->|2. 인증 성공| UI[💻 Streamlit Web App]
     
     subgraph Frontend Logic
-        UI -->|Login/Signup| Auth[🔐 Supabase Auth]
+        Login -->|Auth Request| Auth[🔐 Supabase Auth]
         UI -->|Chat Query| Validator[🛡️ Input Validator]
         UI -->|Report Request| ReportGen[📝 Report Generator]
         UI -->|Manage Favorites| Watchlistmgr[⭐ Watchlist Manager]
