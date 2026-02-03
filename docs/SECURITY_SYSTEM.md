@@ -1,6 +1,6 @@
 # 🛡️ 시스템 보안 및 프롬프트 인젝션 방어 지침서
 
-본 문서는 서비스의 무결성을 보호하고 악의적인 프롬프트 인젝션(Prompt Injection) 및 탈옥(Jailbreak) 시도를 효과적으로 차단하기 위해 구축된 **3단계 다층 방어 체계(Multi-layered Defense)**를 설명합니다.
+본 문서는 서비스의 무결성을 보호하고 악의적인 프롬프트 인젝션(Prompt Injection) 및 탈옥(Jailbreak) 시도를 효과적으로 차단하기 위해 구축된 **3단계 다층 방어 체계(Multi-layered Defense)** 를 설명합니다.
 
 ---
 
