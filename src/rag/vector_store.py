@@ -238,8 +238,8 @@ class VectorStore:
             # 상위 top_k 문서 반환 (rerank_score 추가 및 음수 점수 필터링)
             reranked = []
             for doc, score in scored_docs:
-                if score < 0:  # 관련성 없는 문서(음수 점수) 제거
-                    continue
+                # if score < 0:  # 관련성 없는 문서(음수 점수) 제거 - [Recall 개선] 필터 제거 (Top K 보장)
+                #     continue
 
                 doc["rerank_score"] = float(score)
                 reranked.append(doc)
@@ -293,15 +293,26 @@ class VectorStore:
         Returns:
             List of relevant documents
         """
-        # For now, do a general search and filter by company
-        results = self.similarity_search(query, k * 2)
+        # [Optimization] 1. Retrieve a larger pool of documents (k=100) to ensure company-specific docs are included
+        # This drastically improves Recall for specific company queries
+        results = self.similarity_search(query, k=100)
 
-        # Filter by company ticker in metadata
+        # 2. Filter by company ticker in metadata
         filtered = [
             doc for doc in results if doc.get("metadata", {}).get("ticker") == company
         ]
 
-        return filtered[:k]
+        if not filtered:
+            logger.warning(
+                f"No documents found for company {company} in top 100 results."
+            )
+            return []
+
+        # 3. Rerank the filtered results using CrossEncoder
+        # This improves Precision by re-scoring the candidates
+        reranked = self.rerank_results(query, filtered, k)
+
+        return reranked
 
     def hybrid_search(
         self,

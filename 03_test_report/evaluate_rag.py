@@ -46,7 +46,7 @@ def evaluate_rag():
     # evaluate_rag.py는 03_test_report 폴더 안에 있음
     current_dir = Path(__file__).resolve().parent
     dataset_path = current_dir / "data" / "evaluation_dataset.csv"
-    
+
     if not dataset_path.exists():
         print(f"❌ 데이터셋을 찾을 수 없습니다: {dataset_path}")
         print("💡 먼저 generate_dataset.py를 실행하여 데이터셋을 생성해주세요.")
@@ -174,7 +174,7 @@ def evaluate_rag():
 
     # 6. 저장
     output_df = result.to_pandas()
-    output_path = "data/evaluation_results_ragas.csv"
+    output_path = "03_test_report/data/evaluation_results_ragas.csv"
     output_df.to_csv(output_path, index=False)
     print(f"✅ 결과 저장 완료: {output_path}")
 

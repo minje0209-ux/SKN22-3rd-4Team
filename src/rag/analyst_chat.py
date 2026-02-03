@@ -11,7 +11,11 @@ from datetime import datetime, timedelta
 from openai import OpenAI
 import json
 import re
-from rag.rag_base import RAGBase, EXCHANGE_AVAILABLE
+
+try:
+    from rag.rag_base import RAGBase, EXCHANGE_AVAILABLE
+except ImportError:
+    from src.rag.rag_base import RAGBase, EXCHANGE_AVAILABLE
 
 logger = logging.getLogger(__name__)
 
@@ -54,8 +58,7 @@ class AnalystChatbot(RAGBase):
 
     def _load_system_prompt_with_defense(self) -> str:
         """
-        시스템 방어 레이어와 메인 프롬프트를 결합하여 로드합니다.
-        방어 레이어가 먼저 오고, 그 다음 메인 프롬프트가 옵니다.
+        시스템 방어 레이어와 모듈화된 프롬프트 컴포넌트들을 결합하여 로드합니다.
         """
         parts = []
 
@@ -65,13 +68,32 @@ class AnalystChatbot(RAGBase):
             parts.append(defense_prompt)
             logger.info("System defense layer loaded")
 
-        # 2. 메인 분석가 프롬프트 로드
-        main_prompt = self._load_prompt("analyst_chat.txt")
-        if main_prompt:
-            parts.append("\n\n# === ANALYST INSTRUCTIONS ===\n")
-            parts.append(main_prompt)
+        # 2. 모듈화된 프롬프트 로드
+        # 순서: 역할/원칙 -> 분석/전략 -> 도구 가이드 -> 출력 형식
+        components = [
+            "components/01_role_principles.txt",
+            "components/02_analysis_framework.txt",
+            "components/03_tool_guidelines.txt",
+            "components/04_output_format.txt",
+        ]
 
-        combined = "\n".join(parts)
+        main_prompt_parts = []
+        for comp in components:
+            content = self._load_prompt(comp)
+            if content:
+                main_prompt_parts.append(content)
+            else:
+                logger.warning(f"Prompt component not found: {comp}")
+
+        if main_prompt_parts:
+            parts.append("\n\n# === ANALYST INSTRUCTIONS ===\n")
+            parts.extend(main_prompt_parts)
+            logger.info(f"Loaded {len(main_prompt_parts)} prompt components")
+        else:
+            logger.error("No prompt components found!")
+            parts.append("SYSTEM ERROR: Prompt not loaded.")
+
+        combined = "\n\n".join(parts)
         logger.debug(f"Combined system prompt: {len(combined)} chars")
         return combined
 
@@ -130,7 +152,7 @@ class AnalystChatbot(RAGBase):
 
     def _build_context(self, query: str, ticker: Optional[str] = None) -> str:
         """Build context from RAG search, company data, and real-time Finnhub data (Optimized with Parallel Fetch)"""
-        
+
         # 0. Translate Query for Better Retrieval (Korean -> English)
         search_query = self._generate_english_search_query(query)
 
@@ -149,7 +171,9 @@ class AnalystChatbot(RAGBase):
         if not self.data_retriever:
             return "데이터 수집 모듈 미작동"
 
-        logger.info(f"Building context for query: {query} (Search: {search_query}), ticker: {ticker}")
+        logger.info(
+            f"Building context for query: {query} (Search: {search_query}), ticker: {ticker}"
+        )
         dataset_context = self.data_retriever.get_company_context_parallel(
             ticker, include_finnhub=True, include_rag=True, query=search_query
         )
@@ -171,11 +195,11 @@ class AnalystChatbot(RAGBase):
         if rels:
             context_parts.append(f"\n## 🕸️ 기업 관계망 및 공급망 ({len(rels)}개 연결)")
             for rel in rels[:10]:  # Show more relationships (up to 10)
-                source = rel.get('source_company')
-                target = rel.get('target_company')
-                rtype = rel.get('relationship_type', '관련')
-                desc = rel.get('description', '')
-                
+                source = rel.get("source_company")
+                target = rel.get("target_company")
+                rtype = rel.get("relationship_type", "관련")
+                desc = rel.get("description", "")
+
                 # 관계 설명이 있으면 추가
                 rel_str = f"- **{source}** → [{rtype}] → **{target}**"
                 if desc:

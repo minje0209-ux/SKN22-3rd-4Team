@@ -55,9 +55,10 @@ class DataRetriever:
 
                 # Filtering을 위해 더 많이 검색 (k=3 -> k=20)
                 rag_future = executor.submit(
-                    self.vector_store.hybrid_search,
+                    self.vector_store.search_by_company,
                     search_query,
-                    k=20,
+                    company=ticker,
+                    k=8,  # Final reranked count (Increased from 5 to 8 for better Recall)
                 )
 
             # 3. 실시간 시세 및 지표 (Finnhub)
@@ -86,16 +87,7 @@ class DataRetriever:
 
             if rag_future:
                 try:
-                    raw_docs = rag_future.result() or []
-                    # Client-side Filtering by Ticker (Metadata)
-                    filtered_docs = [
-                        d
-                        for d in raw_docs
-                        if d.get("metadata", {}).get("ticker") == ticker
-                    ]
-                    # 만약 필터링 후 문서가 너무 적으면(0개), 필터 없이 상위 문서 사용 (Fallback)
-                    # 단, 점수가 너무 낮으면 제외하는 로직은 vector_store 내부에 있음
-                    final_docs = filtered_docs[:5] if filtered_docs else raw_docs[:2]
+                    final_docs = rag_future.result() or []
 
                     results["rag_context"] = (
                         "\n".join([d.get("content", "")[:1000] for d in final_docs])
